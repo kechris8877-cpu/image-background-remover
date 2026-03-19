@@ -264,8 +264,8 @@ export default function Home() {
                     <img
                       src={processedImage}
                       alt="Processed"
-                      className="h-full object-cover"
-                      style={{ width: containerRef.current?.width || 0 }}
+                      className="h-full"
+                      style={{ width: "100%", minWidth: "100%", objectFit: "cover" }}
                     />
                   )}
                   <div className="absolute bottom-4 right-4 px-3 py-1 bg-blue-600/80 text-white text-sm rounded-full">

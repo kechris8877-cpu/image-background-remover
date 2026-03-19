@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 const REMOVE_BG_API_URL = "https://api.remove.bg/v1.0/removebg";
 const REMOVE_BG_API_KEY = process.env.REMOVE_BG_API_KEY;
 
-export const runtime = "edge";
+// export const runtime = "edge"; // 改用 node runtime 以提高稳定性
 
 export async function POST(request: NextRequest) {
   try {
@@ -79,11 +79,14 @@ export async function POST(request: NextRequest) {
 
     // 返回处理后的图片
     const imageBlob = await response.blob();
-    
+
+    // 对文件名进行 URL 编码，避免中文字符导致的 ByteString 错误
+    const sanitizedFileName = `removed-bg-${Date.now()}.png`;
+
     return new NextResponse(imageBlob, {
       headers: {
         "Content-Type": "image/png",
-        "Content-Disposition": `attachment; filename="removed-bg-${file.name.replace(/\.[^/.]+$/, "")}.png"`,
+        "Content-Disposition": `attachment; filename="${sanitizedFileName}"`,
       },
     });
 

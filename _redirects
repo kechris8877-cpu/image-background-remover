@@ -1,0 +1,11 @@
+# Cloudflare Pages Redirects for Next.js
+
+# Static assets
+/_next/static/* /_next/static/:splat 200
+/_next/image/*  /_next/image/:splat 200
+
+# API routes (need to be handled by Edge Runtime or Node.js)
+/api/*  /api/:splat 200
+
+# Next.js pages
+/*  /index.html 200
