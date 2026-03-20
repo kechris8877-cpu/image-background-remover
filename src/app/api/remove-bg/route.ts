@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 const REMOVE_BG_API_URL = "https://api.remove.bg/v1.0/removebg";
 const REMOVE_BG_API_KEY = process.env.REMOVE_BG_API_KEY;
 
-// export const runtime = "edge"; // 改用 node runtime 以提高稳定性
+export const runtime = "edge";
 
 export async function POST(request: NextRequest) {
   try {
