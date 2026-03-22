@@ -1,4 +1,13 @@
 # Cloudflare Pages Configuration
 
+[env.production]
+pages_build_output_dir = ".next"
+
 [env.production.vars]
+REMOVE_BG_API_KEY = "sR1kfjdBQ82VKqmE8dgSVFCf"
+
+[env.preview]
+pages_build_output_dir = ".next"
+
+[env.preview.vars]
 REMOVE_BG_API_KEY = "sR1kfjdBQ82VKqmE8dgSVFCf"
