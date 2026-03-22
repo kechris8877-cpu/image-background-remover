@@ -1,0 +1,15 @@
+{
+  "name": "image-background-remover",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "echo 'Static deployment - no build needed'",
+    "build": "echo 'Static deployment - no build needed'",
+    "start": "echo 'Static deployment - no build needed'"
+  },
+  "description": "Static HTML version for Cloudflare Pages deployment",
+  "static": true,
+  "build": {
+    "skip": true
+  }
+}
