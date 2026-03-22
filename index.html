@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>图片背景移除工具</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .drop-zone {
+            border: 2px dashed #cbd5e1;
+            transition: all 0.3s;
+        }
+        .drop-zone:hover, .drop-zone.dragover {
+            border-color: #3b82f6;
+            background-color: #eff6ff;
+        }
+        .loader {
+            border: 3px solid #f3f4f6;
+            border-top: 3px solid #3b82f6;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50">
+    <div class="container mx-auto px-4 py-8">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-gray-800 mb-2">🖼️ 图片背景移除工具</h1>
+            <p class="text-gray-600">上传图片，自动移除背景</p>
+        </div>
+
+        <!-- Upload Section -->
+        <div class="max-w-2xl mx-auto">
+            <div id="dropZone" class="drop-zone rounded-lg p-12 text-center cursor-pointer bg-white">
+                <div id="uploadContent">
+                    <svg class="w-16 h-16 mx-auto text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                    </svg>
+                    <p class="text-lg font-medium text-gray-700 mb-2">点击或拖拽图片到此处</p>
+                    <p class="text-sm text-gray-500">支持 JPG, PNG, WebP 格式</p>
+                </div>
+                <div id="previewContent" class="hidden">
+                    <img id="previewImage" class="max-h-64 mx-auto mb-4 rounded-lg" alt="预览">
+                    <p id="fileName" class="text-sm text-gray-600 mb-2"></p>
+                </div>
+            </div>
+            <input type="file" id="fileInput" class="hidden" accept="image/*">
+
+            <!-- Process Button -->
+            <div class="mt-6 text-center">
+                <button id="processBtn" class="hidden bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg transition duration-200">
+                    🚀 移除背景
+                </button>
+            </div>
+
+            <!-- Loading -->
+            <div id="loading" class="hidden mt-8 text-center">
+                <div class="loader mx-auto mb-4"></div>
+                <p class="text-gray-600">正在处理图片...</p>
+            </div>
+
+            <!-- Error -->
+            <div id="error" class="hidden mt-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+                <p id="errorMessage"></p>
+            </div>
+        </div>
+
+        <!-- Result Section -->
+        <div id="resultSection" class="hidden mt-8 max-w-2xl mx-auto">
+            <div class="bg-white rounded-lg shadow-lg p-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-4">✅ 处理完成</h2>
+                <div class="grid grid-cols-2 gap-4 mb-6">
+                    <div>
+                        <p class="text-sm font-medium text-gray-700 mb-2">原始图片</p>
+                        <img id="originalImage" class="rounded-lg border" alt="原始图片">
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium text-gray-700 mb-2">处理后图片</p>
+                        <img id="processedImage" class="rounded-lg border" alt="处理后图片">
+                    </div>
+                </div>
+                <div class="text-center">
+                    <button id="downloadBtn" class="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-8 rounded-lg transition duration-200">
+                        📥 下载处理后的图片
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'https://api.remove.bg/v1.0/removebg';
+        const API_KEY = 'sR1kfjdBQ82VKqmE8dgSVFCf';
+
+        const dropZone = document.getElementById('dropZone');
+        const fileInput = document.getElementById('fileInput');
+        const uploadContent = document.getElementById('uploadContent');
+        const previewContent = document.getElementById('previewContent');
+        const previewImage = document.getElementById('previewImage');
+        const fileName = document.getElementById('fileName');
+        const processBtn = document.getElementById('processBtn');
+        const loading = document.getElementById('loading');
+        const error = document.getElementById('error');
+        const errorMessage = document.getElementById('errorMessage');
+        const resultSection = document.getElementById('resultSection');
+        const originalImage = document.getElementById('originalImage');
+        const processedImage = document.getElementById('processedImage');
+        const downloadBtn = document.getElementById('downloadBtn');
+
+        let selectedFile = null;
+        let processedBlob = null;
+
+        // Event Listeners
+        dropZone.addEventListener('click', () => fileInput.click());
+        dropZone.addEventListener('dragover', handleDragOver);
+        dropZone.addEventListener('dragleave', handleDragLeave);
+        dropZone.addEventListener('drop', handleDrop);
+        fileInput.addEventListener('change', handleFileSelect);
+        processBtn.addEventListener('click', processImage);
+        downloadBtn.addEventListener('click', downloadImage);
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        }
+
+        function handleDragLeave(e) {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+        }
+
+        function handleDrop(e) {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        }
+
+        function handleFileSelect(e) {
+            const files = e.target.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        }
+
+        function handleFile(file) {
+            if (!file.type.startsWith('image/')) {
+                showError('请上传图片文件');
+                return;
+            }
+
+            selectedFile = file;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                previewImage.src = e.target.result;
+                fileName.textContent = file.name;
+                uploadContent.classList.add('hidden');
+                previewContent.classList.remove('hidden');
+                processBtn.classList.remove('hidden');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        async function processImage() {
+            if (!selectedFile) return;
+
+            loading.classList.remove('hidden');
+            error.classList.add('hidden');
+            resultSection.classList.add('hidden');
+            processBtn.disabled = true;
+
+            try {
+                const formData = new FormData();
+                formData.append('image_file', selectedFile);
+                formData.append('size', 'auto');
+
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'X-Api-Key': API_KEY,
+                    },
+                    body: formData,
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    throw new Error(`API错误: ${response.status} - ${errorText}`);
+                }
+
+                processedBlob = await response.blob();
+                const processedUrl = URL.createObjectURL(processedBlob);
+
+                // 显示结果
+                originalImage.src = URL.createObjectURL(selectedFile);
+                processedImage.src = processedUrl;
+                resultSection.classList.remove('hidden');
+
+                // 滚动到结果区域
+                resultSection.scrollIntoView({ behavior: 'smooth' });
+
+            } catch (err) {
+                showError(err.message);
+            } finally {
+                loading.classList.add('hidden');
+                processBtn.disabled = false;
+            }
+        }
+
+        function downloadImage() {
+            if (!processedBlob) return;
+
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(processedBlob);
+            link.download = 'background-removed.png';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function showError(message) {
+            errorMessage.textContent = message;
+            error.classList.remove('hidden');
+        }
+
+        // Reset functionality
+        dropZone.addEventListener('dblclick', resetUpload);
+
+        function resetUpload() {
+            selectedFile = null;
+            processedBlob = null;
+            previewImage.src = '';
+            fileName.textContent = '';
+            uploadContent.classList.remove('hidden');
+            previewContent.classList.add('hidden');
+            processBtn.classList.add('hidden');
+            error.classList.add('hidden');
+            resultSection.classList.add('hidden');
+            fileInput.value = '';
+        }
+    </script>
+</body>
+</html>
