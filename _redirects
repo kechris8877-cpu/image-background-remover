@@ -4,8 +4,9 @@
 /_next/static/* /_next/static/:splat 200
 /_next/image/*  /_next/image/:splat 200
 
-# API routes (need to be handled by Edge Runtime or Node.js)
+# API routes - handled by Next.js API routes
 /api/*  /api/:splat 200
 
-# Next.js pages
+# Next.js pages - only index.html for SPA fallback
+/index.html  /index.html 200
 /*  /index.html 200

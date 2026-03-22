@@ -4,6 +4,13 @@ const nextConfig = {
   images: {
     domains: [],
   },
+  // Cloudflare Pages compatibility
+  output: 'export',
+  trailingSlash: true,
+  distDir: 'out',
+  images: {
+    unoptimized: true,
+  },
 };
 
 export default nextConfig;
