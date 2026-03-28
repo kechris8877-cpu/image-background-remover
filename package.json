@@ -1,6 +1,12 @@
 {
+  "name": "image-background-remover",
+  "version": "1.0.0",
+  "main": "src/index.js",
   "scripts": {
-    "build": "echo 'Static deployment - no build needed'",
-    "deploy": "echo 'No deploy script needed - Cloudflare Pages handles this automatically'"
- "dependencies": "next": "^14.2.3" }
+    "deploy": "wrangler deploy"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20240312.0",
+    "wrangler": "^3.55.0"
+  }
 }

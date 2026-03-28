@@ -1,8 +1,11 @@
 name = "image-background-remover"
-pages_build_output_dir = ".next"
+main = "src/index.js"
+compatibility_date = "2023-08-01"
+compatibility_flags = ["nodejs_compat"]
 
-[env.production.vars]
-REMOVE_BG_API_KEY = "sR1kfjdBQ82VKqmE8dgSVFCf"
+[vars]
+REMOVE_BG_API_KEY = "YOUR_REMOVE_BG_API_KEY"
 
-[env.production]
-pages_build_output_dir = ".next"
+[[routes]]
+pattern = "/*"
+zone = "yourdomain.com"
